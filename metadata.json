@@ -1,0 +1,5 @@
+{
+  "name": "HireSync - AI Resume Analyzer",
+  "description": "A professional AI-powered tool to analyze resumes against job descriptions, providing ATS scores, skill gap analysis, and personalized outreach templates using Gemini 3 Pro.",
+  "requestFramePermissions": []
+}

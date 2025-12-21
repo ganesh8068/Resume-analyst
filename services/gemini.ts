@@ -1,10 +1,8 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-// Fix: Consolidate type imports from types/index
-import { AnalysisInputs, AnalysisResult } from "../types/index";
+import { AnalysisInputs, AnalysisResult, InterviewQuestion } from "../types/index";
 
 export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisResult> => {
-  // Initialize AI with direct reference to process.env.API_KEY as per guidelines
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const prompt = `
@@ -22,7 +20,12 @@ export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisRes
     CANDIDATE EXPERIENCE LEVEL:
     ${inputs.experienceLevel}
 
-    Provide a highly detailed analysis in JSON format following the requested structure.
+    INSTRUCTIONS:
+    - Include 3 specific portfolio project ideas to bridge the missing critical skills.
+    - Generate a high-conversion cold email and LinkedIn message with [GitHub Link] and [Resume Link] placeholders.
+    - Provide a detailed ATS score and skill gap analysis.
+
+    Provide analysis in JSON format.
   `;
 
   const response = await ai.models.generateContent({
@@ -32,13 +35,13 @@ export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisRes
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
-        required: ["atsScore", "skillsMatch", "pros", "cons", "improvements", "verdict", "emailTemplate", "linkedInTemplate", "recruiterTip"],
+        required: ["atsScore", "skillsMatch", "pros", "cons", "improvements", "verdict", "emailTemplate", "linkedInTemplate", "recruiterTip", "projectSuggestions"],
         properties: {
           atsScore: {
             type: Type.OBJECT,
             required: ["score", "issues"],
             properties: {
-              score: { type: Type.NUMBER, description: "Estimated ATS compatibility score 0-100" },
+              score: { type: Type.NUMBER },
               issues: { type: Type.ARRAY, items: { type: Type.STRING } }
             }
           },
@@ -64,10 +67,7 @@ export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisRes
                 items: {
                   type: Type.OBJECT,
                   required: ["old", "new"],
-                  properties: {
-                    old: { type: Type.STRING },
-                    new: { type: Type.STRING }
-                  }
+                  properties: { old: { type: Type.STRING }, new: { type: Type.STRING } }
                 }
               }
             }
@@ -76,7 +76,7 @@ export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisRes
             type: Type.OBJECT,
             required: ["status", "reasoning"],
             properties: {
-              status: { type: Type.STRING, description: "Hire / Borderline / Not Ready" },
+              status: { type: Type.STRING },
               reasoning: { type: Type.STRING }
             }
           },
@@ -97,14 +97,70 @@ export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisRes
               followUp: { type: Type.STRING }
             }
           },
-          recruiterTip: { type: Type.STRING }
+          recruiterTip: { type: Type.STRING },
+          projectSuggestions: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              required: ["title", "description", "difficulty"],
+              properties: {
+                title: { type: Type.STRING },
+                description: { type: Type.STRING },
+                difficulty: { type: Type.STRING }
+              }
+            }
+          }
         }
       }
     }
   });
 
-  // Accessing the .text property directly as per the correct method in SDK guidelines
   const text = response.text;
   if (!text) throw new Error("Empty response from AI");
-  return JSON.parse(text) as AnalysisResult;
+  const result = JSON.parse(text) as AnalysisResult;
+  
+  // Tag with metadata for history
+  result.id = Math.random().toString(36).substring(2, 15);
+  result.timestamp = Date.now();
+  result.jobTitle = inputs.jobTitle;
+
+  return result;
+};
+
+export const generateInterviewQuestions = async (result: AnalysisResult): Promise<InterviewQuestion[]> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const prompt = `
+    Based on the following resume analysis for the role of ${result.jobTitle}, generate 5 challenging interview questions.
+    Focus on:
+    - Bridging the missing skills: ${result.skillsMatch.missingCritical.join(', ')}
+    - Probing the strengths: ${result.pros.join(', ')}
+    - Role-specific behavioral scenarios.
+
+    Analysis Verdict: ${result.verdict.reasoning}
+
+    Provide in JSON format.
+  `;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          required: ["question", "type", "idealAnswerPoints"],
+          properties: {
+            question: { type: Type.STRING },
+            type: { type: Type.STRING },
+            idealAnswerPoints: { type: Type.ARRAY, items: { type: Type.STRING } }
+          }
+        }
+      }
+    }
+  });
+
+  return JSON.parse(response.text || '[]') as InterviewQuestion[];
 };

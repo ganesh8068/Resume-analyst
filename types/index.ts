@@ -18,7 +18,16 @@ export interface BulletRewrite {
   new: string;
 }
 
+export interface InterviewQuestion {
+  question: string;
+  type: 'technical' | 'behavioral' | 'situational';
+  idealAnswerPoints: string[];
+}
+
 export interface AnalysisResult {
+  id?: string;
+  timestamp?: number;
+  jobTitle?: string;
   atsScore: {
     score: number;
     issues: string[];
@@ -49,7 +58,11 @@ export interface AnalysisResult {
     followUp: string;
   };
   recruiterTip: string;
+  projectSuggestions?: {
+    title: string;
+    description: string;
+    difficulty: string;
+  }[];
 }
 
-// Fix: Define ViewState to resolve export errors in components referencing this file
-export type ViewState = 'home' | 'analyzer' | 'about' | 'roadmap' | 'templates';
+export type ViewState = 'home' | 'analyzer' | 'about' | 'roadmap' | 'templates' | 'dashboard' | 'interview';

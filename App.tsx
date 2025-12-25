@@ -11,19 +11,24 @@ import Analyzer from './pages/Analyzer';
 import About from './pages/About';
 import Roadmap from './pages/Roadmap';
 import Templates from './pages/Templates';
-import Dashboard from './pages/Dashboard';
 import InterviewPrep from './pages/InterviewPrep';
+import Negotiator from './pages/Negotiator';
+import Strategist from './pages/Strategist';
+import ResumeBuilder from './pages/ResumeBuilder';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('home');
 
-  // Handle Hash-based routing for navigation reliability
   useEffect(() => {
     const handleHash = () => {
-      const hash = window.location.hash.replace('#', '') as ViewState;
-      if (['analyzer', 'dashboard', 'interview', 'about', 'roadmap', 'templates'].includes(hash)) {
-        setView(hash);
+      const rawHash = window.location.hash.replace('#', '');
+      const validViews: ViewState[] = ['analyzer', 'interview', 'about', 'roadmap', 'templates', 'negotiator', 'builder'];
+      
+      if (validViews.includes(rawHash as ViewState)) {
+        setView(rawHash as ViewState);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (rawHash === '' || rawHash === 'home') {
+        setView('home');
       }
     };
     window.addEventListener('hashchange', handleHash);
@@ -45,8 +50,9 @@ const App: React.FC = () => {
       <main className="relative z-10 flex-grow">
         {view === 'home' && <Home setView={changeView} onStart={() => changeView('analyzer')} />}
         {view === 'analyzer' && <Analyzer />}
-        {view === 'dashboard' && <Dashboard />}
         {view === 'interview' && <InterviewPrep />}
+        {view === 'negotiator' && <Negotiator />}
+        {view === 'builder' && <ResumeBuilder />}
         {view === 'about' && <About />}
         {view === 'roadmap' && <Roadmap />}
         {view === 'templates' && <Templates />}

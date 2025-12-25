@@ -24,6 +24,48 @@ export interface InterviewQuestion {
   idealAnswerPoints: string[];
 }
 
+export interface NegotiationScript {
+  phase: string;
+  script: string;
+  tacticalNote: string;
+}
+
+export interface JobStrategy {
+  targetSectors: string[];
+  networkingStrategy: string;
+  dailyActionPlan: {
+    day: string;
+    tasks: string[];
+  }[];
+}
+
+export interface ExperienceEntry {
+  company: string;
+  role: string;
+  period: string;
+  location: string;
+  description: string;
+}
+
+export interface EducationEntry {
+  school: string;
+  degree: string;
+  period: string;
+  location: string;
+}
+
+export interface ResumeData {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  website: string;
+  summary: string;
+  experience: ExperienceEntry[];
+  education: EducationEntry[];
+  skills: string[];
+}
+
 export interface AnalysisResult {
   id?: string;
   timestamp?: number;
@@ -65,4 +107,4 @@ export interface AnalysisResult {
   }[];
 }
 
-export type ViewState = 'home' | 'analyzer' | 'about' | 'roadmap' | 'templates' | 'dashboard' | 'interview';
+export type ViewState = 'home' | 'analyzer' | 'about' | 'roadmap' | 'templates' | 'interview' | 'negotiator' | 'builder';

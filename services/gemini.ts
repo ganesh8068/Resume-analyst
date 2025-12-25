@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { AnalysisInputs, AnalysisResult, InterviewQuestion } from "../types/index";
+import { AnalysisInputs, AnalysisResult, InterviewQuestion, NegotiationScript, JobStrategy } from "../types/index";
 
 export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisResult> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -119,7 +119,6 @@ export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisRes
   if (!text) throw new Error("Empty response from AI");
   const result = JSON.parse(text) as AnalysisResult;
   
-  // Tag with metadata for history
   result.id = Math.random().toString(36).substring(2, 15);
   result.timestamp = Date.now();
   result.jobTitle = inputs.jobTitle;
@@ -129,19 +128,7 @@ export const analyzeResume = async (inputs: AnalysisInputs): Promise<AnalysisRes
 
 export const generateInterviewQuestions = async (result: AnalysisResult): Promise<InterviewQuestion[]> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
-  const prompt = `
-    Based on the following resume analysis for the role of ${result.jobTitle}, generate 5 challenging interview questions.
-    Focus on:
-    - Bridging the missing skills: ${result.skillsMatch.missingCritical.join(', ')}
-    - Probing the strengths: ${result.pros.join(', ')}
-    - Role-specific behavioral scenarios.
-
-    Analysis Verdict: ${result.verdict.reasoning}
-
-    Provide in JSON format.
-  `;
-
+  const prompt = `Based on resume analysis for ${result.jobTitle}, generate 5 challenging interview questions as JSON.`;
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: prompt,
@@ -161,6 +148,76 @@ export const generateInterviewQuestions = async (result: AnalysisResult): Promis
       }
     }
   });
+  return JSON.parse(response.text || '[]');
+};
 
-  return JSON.parse(response.text || '[]') as InterviewQuestion[];
+export const generateNegotiationScripts = async (result: AnalysisResult): Promise<NegotiationScript[]> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const prompt = `Generate 3 tactical salary negotiation scripts for the role of ${result.jobTitle} based on the skills matched in this analysis: ${result.skillsMatch.matched.join(', ')}. Return as JSON array of {phase, script, tacticalNote}.`;
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          required: ["phase", "script", "tacticalNote"],
+          properties: {
+            phase: { type: Type.STRING },
+            script: { type: Type.STRING },
+            tacticalNote: { type: Type.STRING }
+          }
+        }
+      }
+    }
+  });
+  return JSON.parse(response.text || '[]');
+};
+
+export const generateJobStrategy = async (result: AnalysisResult): Promise<JobStrategy> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const prompt = `Synthesize a 7-day job search deployment strategy for the role of ${result.jobTitle} based on this analysis result: ${JSON.stringify(result.skillsMatch)}. Include target sectors, networking strategy, and dailyActionPlan. Return as JSON.`;
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        required: ["targetSectors", "networkingStrategy", "dailyActionPlan"],
+        properties: {
+          targetSectors: { type: Type.ARRAY, items: { type: Type.STRING } },
+          networkingStrategy: { type: Type.STRING },
+          dailyActionPlan: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              required: ["day", "tasks"],
+              properties: {
+                day: { type: Type.STRING },
+                tasks: { type: Type.ARRAY, items: { type: Type.STRING } }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+  const text = response.text;
+  if (!text) throw new Error("Empty response from AI");
+  return JSON.parse(text) as JobStrategy;
+};
+
+export const optimizeResumeSection = async (sectionType: string, content: string): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const prompt = `Optimize the following resume ${sectionType} section for maximum professional impact, ATS compatibility, and metric-driven results. Keep it professional and concise. Return only the optimized text.\n\nCONTENT:\n${content}`;
+  
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: prompt,
+  });
+  
+  return response.text || content;
 };

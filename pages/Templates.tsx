@@ -3,9 +3,56 @@ import React, { useState } from 'react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import Button from '../components/ui/Button';
 
+interface TemplateCardProps {
+  title: string;
+  description: string;
+  icon: string;
+  content: string;
+  type: 'Resume' | 'Cover Letter' | 'Cold Email' | 'LinkedIn';
+  onCopy: (text: string, id: string) => void;
+  copyStatus: boolean;
+  id: string;
+}
+
+const TemplateCard: React.FC<TemplateCardProps> = ({ 
+  title, description, icon, content, type, onCopy, copyStatus, id 
+}) => (
+  <div className="reveal-on-scroll p-8 rounded-[40px] bg-white/[0.02] border border-white/5 group hover:border-[#4fd1c5]/30 transition-all flex flex-col h-full">
+    <div className="flex justify-between items-start mb-6">
+      <div className="w-12 h-12 bg-[#4fd1c5]/10 rounded-xl flex items-center justify-center">
+        <i className={`fas ${icon} text-[#4fd1c5] text-xl`}></i>
+      </div>
+      <span className="text-[8px] font-black text-[#4fd1c5] border border-[#4fd1c5]/20 px-3 py-1 rounded-full uppercase tracking-widest">
+        {type}
+      </span>
+    </div>
+    
+    <div className="flex-grow">
+      <h4 className="text-xl font-black text-white uppercase mb-3 tracking-tight group-hover:text-[#4fd1c5] transition-colors">
+        {title}
+      </h4>
+      <p className="text-slate-400 text-xs leading-relaxed mb-6 font-medium">
+        {description}
+      </p>
+      
+      <div className="bg-black/40 rounded-2xl p-4 border border-white/5 mb-6 font-mono text-[10px] text-slate-500 line-clamp-4 relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none rounded-2xl"></div>
+        {content}
+      </div>
+    </div>
+
+    <Button 
+      variant={copyStatus ? 'secondary' : 'primary'}
+      onClick={() => onCopy(content, id)}
+      className="w-full h-12 text-[9px]"
+    >
+      {copyStatus ? 'Blueprint Synced' : 'Copy Blueprint'}
+    </Button>
+  </div>
+);
+
 const Templates: React.FC = () => {
   useScrollReveal();
-  
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   const handleCopy = (text: string, id: string) => {
@@ -14,130 +61,83 @@ const Templates: React.FC = () => {
     setTimeout(() => setCopyStatus(null), 2000);
   };
 
+  const templatesData: Omit<TemplateCardProps, 'onCopy' | 'copyStatus' | 'id'>[] = [
+    {
+      type: 'Resume',
+      title: 'The Minimalist Schema',
+      description: 'Ultra-lean impact-focused structure. Designed to pass elite tech firm parsers with 99% accuracy.',
+      icon: 'fa-border-none',
+      content: '[SUMMARY]\n- Quantitative high-impact metrics\n- Skill cloud mapping\n- Experience synchronization nodes\n- Academic credentials'
+    },
+    {
+      type: 'Resume',
+      title: 'The Architect Layout',
+      description: 'Technical blueprint emphasizing engineering depth, stack architecture, and code contributions.',
+      icon: 'fa-code',
+      content: '[TECH STACK]\n- Systems Architecture\n- Scalable API Development\n- CI/CD Orchestration\n- Core Engineering Contributions'
+    },
+    {
+      type: 'Cover Letter',
+      title: 'Impact-First Protocol',
+      description: 'Modular cover letter structure designed to trigger a psychological hook in the first 3 seconds.',
+      icon: 'fa-file-signature',
+      content: 'Dear [Hiring Manager Name],\n\n[Company Name] is currently scaling [Specific Goal], and my background in [Core Skill] aligns with your goal to [Specific Objective]. In my previous cycle at [Last Company], I achieved [Metric].'
+    },
+    {
+      type: 'Cold Email',
+      title: 'The Direct Link Hook',
+      description: 'High-conversion cold email for direct recruiter contact. Optimized for readability on mobile devices.',
+      icon: 'fa-paper-plane',
+      content: 'SUBJ: [Target Role] Inquiry - [Your Name]\n\nHi [Name],\n\nI noticed [Company] is innovating in [Sector]. With my background in [Skill], I believe I can help with [Goal]. Attached is my CV. Open for a brief sync?'
+    },
+    {
+      type: 'LinkedIn',
+      title: 'Network Sync Script',
+      description: 'Professional connection request designed to build trust without triggering sales filters.',
+      icon: 'fa-link',
+      content: 'Hi [Name], I noticed your work at [Company] regarding [Topic]. As a fellow [Your Role], I’d love to connect and follow your professional journey.\n\nBest, [Your Name]'
+    },
+    {
+      type: 'LinkedIn',
+      title: 'The Follow-Up Node',
+      description: 'Low-friction follow-up sequence to re-engage recruiters after a successful connection.',
+      icon: 'fa-comment-dots',
+      content: 'Hi [Name], thanks for the connection. I saw [Company] just launched [Product/News]—really impressive work. If you have 5 mins next week, I’d love to learn more about the engineering culture there.'
+    }
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-6 pt-40 pb-40 reveal-view space-y-32">
-      {/* Page Header */}
       <div className="text-center space-y-6 reveal-on-scroll">
         <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase">Neural <span className="text-[#4fd1c5]">Assets.</span></h2>
-        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">High-Conversion Blueprints for Professional Synchronization</p>
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">High-Fidelity blueprints for professional synchronization</p>
       </div>
 
-      {/* 1. Resume Section */}
-      <div className="space-y-12">
-        <div className="flex items-center gap-4 reveal-on-scroll">
-          <div className="w-1.5 h-8 bg-[#4fd1c5] rounded-full"></div>
-          <h3 className="text-2xl font-black text-white uppercase tracking-tighter">01. Resume Schemas</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {[
-            { name: "The Minimalist", icon: "fa-border-none", desc: "Extreme focus on impact metrics and whitespace. Optimized for high-growth tech firms.", badge: "Popular" },
-            { name: "The Architect", icon: "fa-code", desc: "Technical layout emphasizing project architecture, stack proficiency, and code quality.", badge: "Technical" }
-          ].map((t, i) => (
-            <div key={i} className="reveal-on-scroll p-8 rounded-[40px] bg-white/[0.02] border border-white/5 group hover:border-[#4fd1c5]/30 transition-all">
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 bg-[#4fd1c5]/10 rounded-xl flex items-center justify-center">
-                  <i className={`fas ${t.icon} text-[#4fd1c5]`}></i>
-                </div>
-                <span className="text-[8px] font-black text-[#4fd1c5] border border-[#4fd1c5]/20 px-3 py-1 rounded-full uppercase tracking-widest">{t.badge}</span>
-              </div>
-              <h4 className="text-xl font-black text-white uppercase mb-3">{t.name}</h4>
-              <p className="text-slate-400 text-xs leading-relaxed mb-6">{t.desc}</p>
-              <Button variant="secondary" className="w-full h-12 text-[9px]">Preview DNA</Button>
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {templatesData.map((template, index) => {
+          const id = `template-${index}`;
+          return (
+            <TemplateCard 
+              key={id}
+              id={id}
+              {...template}
+              onCopy={handleCopy}
+              copyStatus={copyStatus === id}
+            />
+          );
+        })}
       </div>
 
-      {/* 2. Cover Letter Section */}
-      <div className="space-y-12">
-        <div className="flex items-center gap-4 reveal-on-scroll">
-          <div className="w-1.5 h-8 bg-[#4fd1c5] rounded-full"></div>
-          <h3 className="text-2xl font-black text-white uppercase tracking-tighter">02. Cover Letter Blueprints</h3>
-        </div>
-        <div className="reveal-on-scroll p-10 rounded-[48px] bg-white/[0.02] border border-white/5 group hover:border-[#4fd1c5]/30 transition-all">
-          <div className="flex flex-col lg:flex-row gap-12">
-            <div className="lg:w-1/3 space-y-6">
-              <div className="w-16 h-16 bg-[#4fd1c5]/10 rounded-2xl flex items-center justify-center">
-                <i className="fas fa-file-signature text-2xl text-[#4fd1c5]"></i>
-              </div>
-              <h4 className="text-2xl font-black text-white uppercase tracking-tight">The "Impact-First" Protocol</h4>
-              <p className="text-slate-400 text-sm leading-relaxed">A modular cover letter structure designed to hook recruiters in the first 3 seconds by addressing specific pain points.</p>
-              <ul className="space-y-3">
-                {['Direct Hook Intro', 'Skill-Value Alignment', 'The "Why Us" Vector', 'Call to Action'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                    <i className="fas fa-check text-[#4fd1c5]"></i> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="lg:w-2/3">
-              <div className="bg-black/40 rounded-3xl p-8 border border-white/5 font-mono text-xs text-slate-400 leading-relaxed relative">
-                <div className="absolute top-4 right-6 text-[8px] text-[#4fd1c5] font-black tracking-widest uppercase">Content Payload</div>
-                <p className="mb-4">Dear [Hiring Manager Name],</p>
-                <p className="mb-4">I’m writing to you because [Company Name] is currently [Scaling/Innovating/Solving Problem], and my background in [Core Skill] aligns perfectly with your goal to [Specific Company Goal].</p>
-                <p className="mb-4">In my previous cycle at [Last Company], I successfully [Metric-Driven Achievement]. This experience directly translates to how I would approach [Specific JD Requirement] at [Company Name].</p>
-                <p className="mb-4">I’m especially drawn to your approach to [Company Value/Tech Stack] and would welcome the chance to discuss how my neural assets can contribute to your upcoming projects.</p>
-                <p>Best regards,<br/>[Your Name]</p>
-              </div>
-              <Button 
-                onClick={() => handleCopy("Dear [Hiring Manager Name],\n\nI’m writing to you because [Company Name] is currently [Scaling/Innovating/Solving Problem], and my background in [Core Skill] aligns perfectly with your goal to [Specific Company Goal].\n\nIn my previous cycle at [Last Company], I successfully [Metric-Driven Achievement]. This experience directly translates to how I would approach [Specific JD Requirement] at [Company Name].\n\nI’m especially drawn to your approach to [Company Value/Tech Stack] and would welcome the chance to discuss how my neural assets can contribute to your upcoming projects.\n\nBest regards,\n[Your Name]", "cover-letter")}
-                variant={copyStatus === 'cover-letter' ? 'secondary' : 'primary'}
-                className="w-full mt-6 h-14 text-[10px]"
-              >
-                {copyStatus === 'cover-letter' ? 'Blueprint Synchronized' : 'Copy Cover Letter Blueprint'}
-              </Button>
-            </div>
+      <div className="pt-20 reveal-on-scroll">
+        <div className="p-12 rounded-[64px] bg-white/[0.02] border border-white/5 text-center space-y-8 max-w-4xl mx-auto">
+          <div className="w-16 h-16 bg-[#4fd1c5]/10 rounded-2xl flex items-center justify-center mx-auto">
+            <i className="fas fa-terminal text-2xl text-[#4fd1c5]"></i>
           </div>
-        </div>
-      </div>
-
-      {/* 3 & 4. Outreach Protocols */}
-      <div className="space-y-12">
-        <div className="flex items-center gap-4 reveal-on-scroll">
-          <div className="w-1.5 h-8 bg-[#4fd1c5] rounded-full"></div>
-          <h3 className="text-2xl font-black text-white uppercase tracking-tighter">03 & 04. Outreach Protocols</h3>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Cold Email Card */}
-          <div className="reveal-on-scroll p-8 rounded-[40px] bg-white/[0.02] border border-white/5 group hover:border-[#4fd1c5]/30 transition-all text-left flex flex-col">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-[#4fd1c5]/10 rounded-xl flex items-center justify-center">
-                <i className="fas fa-paper-plane text-[#4fd1c5]"></i>
-              </div>
-              <h4 className="text-lg font-black text-white uppercase tracking-tight">Cold Email Sync</h4>
-            </div>
-            <div className="bg-black/40 rounded-2xl p-6 border border-white/5 mb-6 font-mono text-[10px] text-slate-500 flex-grow">
-              <p className="mb-2"><span className="text-[#4fd1c5]">SUBJ:</span> [Target Role] Inquiry - [Your Name]</p>
-              <p>Hi [Name], I've been following [Company]'s growth in [Sector]. With my background in [Skill], I'm interested in the [Role]. Attached is my CV for review. Open for a brief sync?</p>
-            </div>
-            <Button 
-              onClick={() => handleCopy("SUBJ: [Target Role] Inquiry - [Your Name]\n\nHi [Name], I've been following [Company]'s growth in [Sector]. With my background in [Skill], I'm interested in the [Role]. Attached is my CV for review. Open for a brief sync?", "cold-email")}
-              variant={copyStatus === 'cold-email' ? 'secondary' : 'primary'}
-              className="w-full h-12 text-[9px]"
-            >
-              {copyStatus === 'cold-email' ? 'Synced' : 'Copy Email Blueprint'}
-            </Button>
-          </div>
-
-          {/* LinkedIn Card */}
-          <div className="reveal-on-scroll p-8 rounded-[40px] bg-white/[0.02] border border-white/5 group hover:border-[#4fd1c5]/30 transition-all text-left flex flex-col">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-[#4fd1c5]/10 rounded-xl flex items-center justify-center">
-                <i className="fab fa-linkedin-in text-[#4fd1c5]"></i>
-              </div>
-              <h4 className="text-lg font-black text-white uppercase tracking-tight">LinkedIn Connect</h4>
-            </div>
-            <div className="bg-black/40 rounded-2xl p-6 border border-white/5 mb-6 font-mono text-[10px] text-slate-500 flex-grow">
-              <p>Hi [Name], I noticed your work at [Company] regarding [Topic]. As a fellow [Your Role], I’d love to connect and follow your professional journey. Best, [Your Name].</p>
-            </div>
-            <Button 
-              onClick={() => handleCopy("Hi [Name], I noticed your work at [Company] regarding [Topic]. As a fellow [Your Role], I’d love to connect and follow your professional journey. Best, [Your Name].", "linkedin")}
-              variant={copyStatus === 'linkedin' ? 'secondary' : 'primary'}
-              className="w-full h-12 text-[9px]"
-            >
-              {copyStatus === 'linkedin' ? 'Synced' : 'Copy LinkedIn Script'}
-            </Button>
-          </div>
+          <h3 className="text-2xl font-black text-white uppercase tracking-tight">Need custom logic?</h3>
+          <p className="text-slate-400 text-sm leading-relaxed max-w-xl mx-auto">
+            Our Neural Analyzer generates role-specific templates unique to your professional DNA during every analysis sequence.
+          </p>
+          <Button onClick={() => window.location.hash = 'analyzer'} className="h-14">Initiate New Analysis</Button>
         </div>
       </div>
     </div>

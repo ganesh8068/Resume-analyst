@@ -1,6 +1,5 @@
 
 import React from 'react';
-// Fix: Use types/index to ensure the Navbar has access to the full ViewState options
 import { ViewState } from '../../types/index';
 
 interface NavbarProps {
@@ -11,7 +10,6 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
   return (
     <nav className="fixed top-0 left-0 right-0 h-28 border-b border-white/5 backdrop-blur-3xl z-[100] px-8 md:px-12 flex items-center justify-between">
-      {/* Logo Container */}
       <div 
         className="flex items-center gap-4 cursor-pointer group p-3 rounded-sm" 
         onClick={() => setView('home')}
@@ -25,19 +23,19 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
         </div>
       </div>
 
-      <div className="hidden lg:flex items-center gap-8">
+      <div className="hidden lg:flex items-center gap-6 overflow-x-auto max-w-[60%] no-scrollbar">
          {[
            { label: 'Analysis', value: 'analyzer' },
-           { label: 'Dashboard', value: 'dashboard' },
-           { label: 'Interview Prep', value: 'interview' },
+           { label: 'Architect', value: 'builder' },
+           { label: 'Interview', value: 'interview' },
+           { label: 'Negotiate', value: 'negotiator' },
            { label: 'Templates', value: 'templates' },
-           { label: 'Roadmap', value: 'roadmap' },
            { label: 'About', value: 'about' }
          ].map((item) => (
            <button 
               key={item.value} 
               onClick={() => { setView(item.value as ViewState); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-              className={`text-[9px] font-black uppercase tracking-[0.2em] transition-colors relative group whitespace-nowrap ${currentView === item.value ? 'text-[#4fd1c5]' : 'text-slate-400 hover:text-white'}`}
+              className={`text-[8px] font-black uppercase tracking-[0.2em] transition-colors relative group whitespace-nowrap ${currentView === item.value ? 'text-[#4fd1c5]' : 'text-slate-400 hover:text-white'}`}
              >
                 {item.label}
                 <span className={`absolute -bottom-2 left-0 h-[1px] bg-[#4fd1c5] transition-all ${currentView === item.value ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
